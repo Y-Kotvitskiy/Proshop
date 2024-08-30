@@ -32,7 +32,6 @@ const ProductScreen = () => {
   const navigate = useNavigate();
 
   const addToCartHandler = () => {
-    console.log(`qty`,qty);
     dispatch(
       addToCart({
         ...product,
