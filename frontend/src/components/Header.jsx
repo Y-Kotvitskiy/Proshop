@@ -8,7 +8,7 @@ const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
 
   return (
-    <header>
+    <header style={{marginBottom: "1em"}}>
       <Navbar bg="dark" variant="dark" expand="md" collapseOnSelect>
         <Container>
           <LinkContainer to="/">
