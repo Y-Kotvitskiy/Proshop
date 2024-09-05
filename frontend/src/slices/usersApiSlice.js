@@ -5,13 +5,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
-        url: `${PRODUCTS_URL}/auth`,
+        url: `${USERS_URL}/auth`,
         method: 'POST',
         body: data,
       }),
     }),
     getProductDetails: builder.query({
-      query: (id) => ({ url: `${PRODUCTS_URL}/${id}` }),
+      query: (id) => ({ url: `${USERS_URL}/${id}` }),
       keepUnusedDataFor: 5,
     }),
   }),
