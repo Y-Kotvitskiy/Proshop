@@ -12,11 +12,24 @@ const PaymentScreen = () => {
   const navigate = useNavigate();
   const { shippingAddress } = useSelector((state) => state.cart);
 
+  useEffect(() => {
+    if (!shippingAddress) {
+      navigate("/shipping");
+    }
+  }, [shippingAddress, navigate]);
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    console.log('submitHandler')
+    dispatch(savePaymentMethod(paymentMethod));
+    navigate("/placeorder");
+  };
+
   return (
     <FormContainer>
       <CheckoutSteps step1 step2 step3 />
       <h1>Payment Method</h1>
-      <Form>
+      <Form onSubmit={submitHandler}>
         <Form.Group>
           <Form.Label as="legend">Select Method</Form.Label>
           <Col>
