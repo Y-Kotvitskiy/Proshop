@@ -19,9 +19,9 @@ const LoginScreen = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
 
-  const { seart } = useLocation();
+  const { search } = useLocation();
 
-  const sp = new URLSearchParams(seart);
+  const sp = new URLSearchParams(search);
 
   const redirect = sp.get("redirect") || "/";
 
