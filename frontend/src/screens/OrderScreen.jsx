@@ -30,7 +30,35 @@ const OrderScreen = () => {
     error,
   } = useGetOrderDetailsQuery(orderId);
 
-  console.log(order);
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+
+  const { userInfo } = useSelector((state) => state.auth);
+
+  const {
+    data: paypal,
+    isLoading: loadingPayPal,
+    error: errorPayPal,
+  } = useGetPayPalClientIdQuery();
+
+  useEffect(() => {
+    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
+      const loadPayPalScript = async () => {
+        paypalDispatch({
+          type: "resetOptions",
+          value: {
+            "client-id": paypal.clientId,
+            currency: "USD",
+          },
+        });
+        paypalDispatch({ type: "setLoadingStatus", value: "pending" });
+      };
+      if (order && !order.isPaid) {
+        loadPayPalScript();
+      }
+    }
+  }, [order, paypal, paypalDispatch, loadingPayPal, errorPayPal]);
 
   return isLoading ? (
     <Loader />
@@ -119,7 +147,31 @@ const OrderScreen = () => {
                 <Col>${order.totalPrice}</Col>
               </Row>
             </ListGroup.Item>
-            {/* PAY ORDER PLACEHOLDER */}
+            {!orderId.isPaid && (
+              <ListGroup.Item>
+                {loadingPay && <Loader />}
+                {isPending ? (
+                  <Loader />
+                ) : (
+                  <>
+                    <div>
+                      <button
+                        onClick={onAproveTest}
+                        style={{ marginBottom: "10px" }}
+                      >
+                        Test Pay Order
+                      </button>
+                    </div>
+                    <div>
+                      <PayPalButtons
+                        createOrder={createOrder}
+                        onApprove={onApprove}
+                      />
+                    </div>
+                  </>
+                )}
+              </ListGroup.Item>
+            )}
             {/* MARK AS DELIVERED */}
           </ListGroup>
         </Col>
