@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Row,
@@ -9,9 +10,16 @@ import {
   Card,
   ListGroupItem,
 } from "react-bootstrap";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
-import { useGetOrderDetailsQuery } from "../slices/ordersApiSlice";
+import {
+  useGetOrderDetailsQuery,
+  usePayOrderMutation,
+  useGetPayPalClientIdQuery,
+} from "../slices/ordersApiSlice";
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
@@ -113,7 +121,7 @@ const OrderScreen = () => {
             </ListGroup.Item>
             {/* PAY ORDER PLACEHOLDER */}
             {/* MARK AS DELIVERED */}
-            </ListGroup>
+          </ListGroup>
         </Col>
       </Row>
     </>
