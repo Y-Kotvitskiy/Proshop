@@ -55,10 +55,48 @@ const OrderScreen = () => {
         paypalDispatch({ type: "setLoadingStatus", value: "pending" });
       };
       if (order && !order.isPaid) {
-        loadPayPalScript();
+        if (!window.paypal) {
+          loadPayPalScript();
+        }
       }
     }
   }, [order, paypal, paypalDispatch, loadingPayPal, errorPayPal]);
+
+  function onApprove(data, actions) {
+    return actions.order.capture().then(async function (details) {
+      try {
+        await payOrder({ orderId, details });
+        refetch();
+        toast.success("Payment successful");
+      } catch (err) {
+        toast.error(err?.data?.message || err.message);
+      }
+    });
+  }
+
+  async function onApproveTest() {
+    await payOrder({ orderId, details: { payer: {} } });
+    refetch();
+    toast.success("Payment successful");
+  }
+  function onError(err) {
+    toast.error(err.message);
+  }
+  function createOrder(data, actions) {
+    return actions.order
+      .create({
+        purchase_units: [
+          {
+            amount: {
+              value: order.totalPrice,
+            },
+          },
+        ],
+      })
+      .then((orderId) => {
+        return orderId;
+      });
+  }
 
   return isLoading ? (
     <Loader />
@@ -156,7 +194,7 @@ const OrderScreen = () => {
                   <>
                     <div>
                       <button
-                        onClick={onAproveTest}
+                        onClick={onApproveTest}
                         style={{ marginBottom: "10px" }}
                       >
                         Test Pay Order
@@ -166,7 +204,8 @@ const OrderScreen = () => {
                       <PayPalButtons
                         createOrder={createOrder}
                         onApprove={onApprove}
-                      />
+                        onError={onError}
+                      ></PayPalButtons>
                     </div>
                   </>
                 )}
