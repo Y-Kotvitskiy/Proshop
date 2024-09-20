@@ -5,7 +5,6 @@ import {
   Col,
   ListGroup,
   Image,
-  Form,
   Button,
   Card,
   ListGroupItem,
@@ -19,6 +18,7 @@ import {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
   useGetPayPalClientIdQuery,
+  useDeliverOrderMutation,
 } from "../slices/ordersApiSlice";
 
 const OrderScreen = () => {
@@ -31,6 +31,9 @@ const OrderScreen = () => {
   } = useGetOrderDetailsQuery(orderId);
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  const [deliverOrder, { isLoading: loadingDeliver }] =
+    useDeliverOrderMutation();
 
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
@@ -61,6 +64,15 @@ const OrderScreen = () => {
       }
     }
   }, [order, paypal, paypalDispatch, loadingPayPal, errorPayPal]);
+
+  const deliverOrderHandler = async () => {
+    try {
+      await deliverOrder({ orderId });
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.message);
+    }
+  };
 
   function onApprove(data, actions) {
     return actions.order.capture().then(async function (details) {
@@ -163,56 +175,74 @@ const OrderScreen = () => {
           </ListGroup>
         </Col>
         <Col md={4}>
-          <ListGroup variand="flush">
-            <ListGroup.Item>
-              <h2>Order Summary</h2>
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <Row>
-                <Col>Items:</Col>
-                <Col>${order.itemsPrice}</Col>
-              </Row>
-              <Row>
-                <Col>Shipping:</Col>
-                <Col>${order.shippingPrice}</Col>
-              </Row>
-              <Row>
-                <Col>Tax:</Col>
-                <Col>${order.taxPrice}</Col>
-              </Row>
-              <Row>
-                <Col>Total:</Col>
-                <Col>${order.totalPrice}</Col>
-              </Row>
-            </ListGroup.Item>
-            {!orderId.isPaid && (
+          <Card>
+            <ListGroup variand="flush">
               <ListGroup.Item>
-                {loadingPay && <Loader />}
-                {isPending ? (
-                  <Loader />
-                ) : (
-                  <>
-                    <div>
-                      <button
-                        onClick={onApproveTest}
-                        style={{ marginBottom: "10px" }}
-                      >
-                        Test Pay Order
-                      </button>
-                    </div>
-                    <div>
-                      <PayPalButtons
-                        createOrder={createOrder}
-                        onApprove={onApprove}
-                        onError={onError}
-                      ></PayPalButtons>
-                    </div>
-                  </>
-                )}
+                <h2>Order Summary</h2>
               </ListGroup.Item>
-            )}
-            {/* MARK AS DELIVERED */}
-          </ListGroup>
+              <ListGroup.Item>
+                <Row>
+                  <Col>Items:</Col>
+                  <Col>${order.itemsPrice}</Col>
+                </Row>
+                <Row>
+                  <Col>Shipping:</Col>
+                  <Col>${order.shippingPrice}</Col>
+                </Row>
+                <Row>
+                  <Col>Tax:</Col>
+                  <Col>${order.taxPrice}</Col>
+                </Row>
+                <Row>
+                  <Col>Total:</Col>
+                  <Col>${order.totalPrice}</Col>
+                </Row>
+              </ListGroup.Item>
+              {!orderId.isPaid && (
+                <ListGroup.Item>
+                  {loadingPay && <Loader />}
+                  {isPending ? (
+                    <Loader />
+                  ) : (
+                    !order.isPaid && (
+                      <>
+                        <div>
+                          <button
+                            onClick={onApproveTest}
+                            style={{ marginBottom: "10px" }}
+                          >
+                            Test Pay Order
+                          </button>
+                        </div>
+                        <div>
+                          <PayPalButtons
+                            createOrder={createOrder}
+                            onApprove={onApprove}
+                            onError={onError}
+                          ></PayPalButtons>
+                        </div>
+                      </>
+                    )
+                  )}
+                </ListGroup.Item>
+              )}
+              {loadingDeliver && <Loader />}
+              {userInfo &&
+                userInfo.isAdmin &&
+                order.isPaid &&
+                !order.isDelivered && (
+                  <ListGroup.Item>
+                    <Button
+                      type="button"
+                      className="btn btn-block"
+                      onClick={deliverOrderHandler}
+                    >
+                      Mark as Delivered
+                    </Button>
+                  </ListGroup.Item>
+                )}
+            </ListGroup>
+          </Card>
         </Col>
       </Row>
     </>
