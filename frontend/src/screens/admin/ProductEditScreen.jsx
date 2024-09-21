@@ -27,23 +27,123 @@ const ProductEditScreen = () => {
     error,
   } = useGetProductDetailsQuery(productId);
 
-  const [updateProduct, { isLoading: loadingUpdate }] = useUpdateProductMutation();
+  const [updateProduct, { isLoading: loadingUpdate }] =
+    useUpdateProductMutation();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (product) {
-        setName(product.name);
-        setPrice(product.price);
-        setImage(product.image);
-        setBrand(product.brand);
-        setCategory(product.category);
-        setCountInStock(product.countInStock);
-        setDescription(product.description);
-        (product.setDescription);
+      setName(product.name);
+      setPrice(product.price);
+      setImage(product.image);
+      setBrand(product.brand);
+      setCategory(product.category);
+      setCountInStock(product.countInStock);
+      setDescription(product.description);
     }
+  }, [product]);
 
-  }, [])
-  return <div>ProductEditScreen</div>;
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    const updatedProduct = {
+      productId,
+      name,
+      price,
+      image,
+      brand,
+      category,
+      countInStock,
+      description,
+    };
+
+    const result = await updateProduct(updatedProduct);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Product updated");
+      navigate("/admin/productlist");
+    }
+  };
+
+  return (
+    <>
+      <Link to="/admin/productlist" className="btn btn-light my-3">
+        Go Back
+      </Link>
+      <FormContainer>
+        <h1>Edit Product</h1>
+        {loadingUpdate && <Loader />}
+        {isLoading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant="danger">{error}</Message>
+        ) : (
+          <Form onSubmit={submitHandler}>
+            <Form.Group controlId="name" className="mt-2">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            <Form.Group controlId="price" className="mt-2">
+              <Form.Label className="mt-2">Price</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Enter price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            {/* IMAGE INPUT PLACEHOLDER  */}
+            <Form.Group controlId="brand" className="mt-2">
+              <Form.Label controlId="brand" className="mt-2">
+                Brand
+              </Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Brand"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            <Form.Group controlId="category" className="mt-2">
+              <Form.Label className="mt-2">Category</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            <Form.Group controlId="countInStock" className="mt-2">
+              <Form.Label className="mt-2">Count in Stock</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Enter Count In Stock"
+                value={countInStock}
+                onChange={(e) => setCountInStock(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            <Form.Group className="mt-2">
+              <Form.Label className="mt-2">Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                placeholder="Description Brand"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+            <Button type="submit" variand="primary" className="my-2">
+              Update
+            </Button>
+          </Form>
+        )}
+      </FormContainer>
+    </>
+  );
 };
 
 export default ProductEditScreen;
