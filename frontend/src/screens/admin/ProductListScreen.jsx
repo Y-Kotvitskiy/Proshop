@@ -1,12 +1,13 @@
 import { LinkContainer } from "react-router-bootstrap";
 import { Table, Button, Row, Col } from "react-bootstrap";
-import { FaTimes, FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import Message from "../../components/Message";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import {
   useGetProductsQuery,
   useCreateProductMutation,
+  useDeleteProductMutation,
 } from "../../slices/productsApiSlice";
 
 const ProductListScreen = () => {
@@ -14,6 +15,9 @@ const ProductListScreen = () => {
 
   const [createProduct, { isLoading: loadingCreate }] =
     useCreateProductMutation();
+
+  const [deleteProduct, { isLoading: loadingDelete }] =
+    useDeleteProductMutation();
 
   const createProductHandler = async () => {
     if (window.confirm("Are you sure you want to create a new product?")) {
@@ -26,9 +30,18 @@ const ProductListScreen = () => {
     }
   };
 
-  const deleteHandler = (id) => {
-    console.log("delete", id);
+  const deleteHandler = async (id) => {
+    if (window.confirm(`Are you sure you want to delete product ${id}?`)) {
+      try {
+        await deleteProduct(id);
+        toast.success(`Product ${id} deleted`);
+        refetch();
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
+      }
+    }
   };
+
   return (
     <>
       <Row className="align-items-center">
@@ -42,6 +55,7 @@ const ProductListScreen = () => {
         </Col>
       </Row>
       {loadingCreate && <Loader />}
+      {loadingDelete && <Loader />}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -51,6 +65,7 @@ const ProductListScreen = () => {
           <Table striped hover responsive className="table-sm">
             <thead>
               <tr>
+                <th>#</th>
                 <th>ID</th>
                 <th>NAME</th>
                 <th>PRICE</th>
@@ -60,8 +75,9 @@ const ProductListScreen = () => {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <tr key={product._id}>
+                  <td>{index + 1}</td>
                   <td>{product._id}</td>
                   <td>{product.name}</td>
                   <td>{product.price}</td>
